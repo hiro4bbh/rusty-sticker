@@ -2,17 +2,22 @@
 
 #[macro_use] extern crate log;
 extern crate env_logger;
+extern crate fnv;
 extern crate getopts;
 
 use std::collections::{HashMap,HashSet};
 use std::env;
 use std::fs::File;
+use std::hash::BuildHasherDefault;
 use std::io::{BufRead,BufReader};
 use std::path::Path;
 use std::process::exit;
 use std::time::Instant;
 
+use fnv::FnvHasher;
 use getopts::{Matches,Options};
+
+type FNVHasher = BuildHasherDefault<FnvHasher>;
 
 type FeatureVector = Vec<(u32, f32)>;
 type FeatureVectors = Vec<FeatureVector>;
@@ -86,19 +91,21 @@ fn read_dataset<P: AsRef<Path>>(filename: P) -> Dataset {
 
 struct DatasetIndex<'a> {
     nfeatures_list: Vec<u32>,
-    indices: HashMap<u32, Vec<(u32, f32)>>,
+    indices: HashMap<u32, Vec<(u32, f32)>, FNVHasher>,
     labelvecs: &'a LabelVectors,
 }
 
 impl<'a> DatasetIndex<'a> {
     fn find_nearests(&self, xi: &FeatureVector, S: usize, beta: f32) -> Vec<(u32, f32)> {
         let mut sim_counts: Vec<(f32, u32)> = vec![(0.0_f32, 0); self.labelvecs.len()];
+        let sim_counts_ptr = sim_counts.as_mut_ptr();
         for &(key, value) in xi {
             match self.indices.get(&key) {
-                Some(index) => { for &(i, v) in index {
-                    sim_counts[i as usize].0 += value * v;
-                    sim_counts[i as usize].1 += 1;
-                } },
+                Some(index) => { unsafe { for &(i, v) in index {
+                    let p = sim_counts_ptr.offset(i as isize);
+                    (*p).0 += value * v;
+                    (*p).1 += 1;
+                } } },
                 None => {}
             }
         }
@@ -140,7 +147,7 @@ impl<'a> DatasetIndex<'a> {
 }
 
 fn construct_dataset_index(ds: &Dataset) -> DatasetIndex {
-    let mut indices: HashMap<u32, Vec<(u32, f32)>> = HashMap::new();
+    let mut indices: HashMap<u32, Vec<(u32, f32)>, FNVHasher> = HashMap::default();
     let mut nfeatures_list = vec![0_u32; ds.X.len()];
     for (i, (xi, _)) in ds.into_iter().enumerate() {
         let mut xinorm = 0.0_f32;
@@ -169,7 +176,7 @@ fn run_test(index: &DatasetIndex, ds: &Dataset, K: usize, S: usize, alpha: f32, 
         }
         xinorm = xinorm.sqrt();
         let index_sims = index.find_nearests(xi, S, beta);
-        let mut label_hist: HashMap<u32, f32> = HashMap::new();
+        let mut label_hist: HashMap<u32, f32, FNVHasher> = HashMap::default();
         for &(j, sim) in &index_sims {
             let sim = (sim/xinorm).powf(alpha);
             for &label in &index.labelvecs[j as usize] {
@@ -219,7 +226,7 @@ fn report_precision(Yhat: &LabelVectors, Y: &LabelVectors, K: usize) -> (f32, f3
     let mut sumPK = 0.0_f32;
     for (i, yihat) in Yhat.iter().enumerate() {
         let yi = &Y[i];
-        let mut yimap: HashSet<u32> = HashSet::new();
+        let mut yimap: HashSet<u32, FNVHasher> = HashSet::default();
         for label in yi {
             yimap.insert(*label);
         }
@@ -231,12 +238,12 @@ fn report_precision(Yhat: &LabelVectors, Y: &LabelVectors, K: usize) -> (f32, f3
         }
         sumPK += (pKi as f32)/(K as f32);
     }
-    let avgPK = sumPK/(Y.len() as f32);
+    let avgPK = sumPK/(Yhat.len() as f32);
     let mut sumMaxPK = 0.0_f32;
     for yi in Y {
         sumMaxPK += (yi.len().min(K) as f32)/(K as f32);
     }
-    let avgMaxPK = sumMaxPK/(Y.len() as f32);
+    let avgMaxPK = sumMaxPK/(Yhat.len() as f32);
     return (avgPK, avgMaxPK);
 }
 

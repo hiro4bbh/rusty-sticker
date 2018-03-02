@@ -3,12 +3,9 @@ name = "rusty-sticker"
 version = "0.0.0"
 authors = [ "Tatsuhiro Aoshima <hiro4bbh@gmail.com>" ]
 
-[profile.dev]
-opt-level = 3
-
 [profile.release]
 opt-level = 3
-debug = false
+debug = true
 rpath = false
 lto = false
 debug-assertions = false
@@ -17,5 +14,6 @@ panic = 'unwind'
 
 [dependencies]
 env_logger = "*"
+fnv = "*"
 getopts = "*"
 log = "*"
