@@ -1,0 +1,21 @@
+[package]
+name = "rusty-sticker"
+version = "0.0.0"
+authors = [ "Tatsuhiro Aoshima <hiro4bbh@gmail.com>" ]
+
+[profile.dev]
+opt-level = 3
+
+[profile.release]
+opt-level = 3
+debug = false
+rpath = false
+lto = false
+debug-assertions = false
+codegen-units = 1
+panic = 'unwind'
+
+[dependencies]
+env_logger = "*"
+getopts = "*"
+log = "*"
