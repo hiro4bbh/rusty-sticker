@@ -111,7 +111,7 @@ impl<'a> DatasetIndex<'a> {
         }
         let mut index_sims: Vec<(u32, f32)> = Vec::with_capacity(S);
         for (i, &(sim, count)) in sim_counts.iter().enumerate() {
-            if count > 0 {
+            if sim > 0.0 {
                 let jaccard = (count as f32)/((self.nfeatures_list[i] + (xi.len() as u32) - count) as f32);
                 let mut sim = sim;
                 if beta == 0.0 {
