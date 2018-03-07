@@ -13,7 +13,7 @@ codegen-units = 1
 panic = 'unwind'
 
 [dependencies]
-env_logger = "*"
 fnv = "*"
 getopts = "*"
 log = "*"
+time = "*"
