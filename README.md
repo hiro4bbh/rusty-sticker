@@ -14,7 +14,7 @@ The reason why we develop rusty-sticker is:
 
 However, in Rust ecosystems, there are some cons against golang (the followings can be done easily in a single environment):
 
-- Hard to compile the binaries for all platforms on a single environment
+- Hard to compile the binaries for all platforms on a single environment (rustc needs the system linkers and libraries)
 - Lack of built-in profilers
 - Slow compilation (however, the optimized codes are amazing!!)
 
@@ -25,16 +25,19 @@ We evaluate the performances against [sticker](https://github.com/hiro4bbh/stick
 
 |Dataset Name|sticker (ms/entry)|rusty-sticker (ms/entry)|Delta|
 |:---|---:|---:|---:|
-|AmazonCat-13K|15.8|15.7|+0.6%|
-|Wiki10-31K|1.22|1.02|+16.3%|
-|Delicious-200K|5.50|4.79|+12.9%|
-|WikiLSHTC-325K|16.3|16.5|-1.2%|
-|Amazon-670K|5.16|4.71|+8.7%|
-|Amazon-3M|16.5|16.8|-1.8%|
+|AmazonCat-13K|15.1|12.6|-16.6%|
+|Wiki10-31K|1.14|1.00|-12.3%|
+|Delicious-200K|4.88|4.43|-9.22%|
+|WikiLSHTC-325K|14.1|12.4|-12.1%|
+|Amazon-670K|4.19|3.66|-12.6%|
+|Amazon-3M|15.5|12.9|-16.8%|
 
-Profiling the code on MacOS with Xcode Instruments shows that the highly-optimized code computing the dot-products dominates the computation.
-Thus, we can speed-up it with unsafe code for avoiding the out-of-bound checks.
-Furthermore, we can speed-up `HashMap` manipulation with `FNVHasher` (improving little).
-However, the naive golang implementation is not so bad, and the performance difference by the optimization efforts in Rust is not large.
+Profiling the code on MacOS with Xcode Instruments (Visual Studio is useless because there is no support of profiling inline functions) shows that:
+- The highly-optimized code computing the dot-products dominates the computation.
+- In larger datasets, using the same context improves the performance, because the memory clears of the accumulator is no longer needed.
 
-Rust is simple and beautiful in design, but we think that there is no definite advantage against golang.
+Thus, we can improve the implementation as follows:
+- For avoiding the out-of-bound checks, use unsafe code `get_unchecked_mut`
+- Use `HashMap` manipulation with `FNVHasher` (improving little)
+
+Currently, the performance difference by the optimization efforts in Rust is not so small.

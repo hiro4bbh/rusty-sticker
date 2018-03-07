@@ -95,14 +95,15 @@ struct DatasetIndex<'a> {
     labelvecs: &'a LabelVectors,
 }
 
+type DatasetIndexContext = Vec<(f32, u32)>;
+
 impl<'a> DatasetIndex<'a> {
-    fn find_nearests(&self, xi: &FeatureVector, S: usize, beta: f32) -> Vec<(u32, f32)> {
-        let mut sim_counts: Vec<(f32, u32)> = vec![(0.0_f32, 0); self.labelvecs.len()];
-        let sim_counts_ptr = sim_counts.as_mut_ptr();
+    fn find_nearests(&self, xi: &FeatureVector, S: usize, beta: f32, ctx: &mut DatasetIndexContext) -> Vec<(u32, f32)> {
+        let sim_counts = ctx;
         for &(key, value) in xi {
             match self.indices.get(&key) {
                 Some(index) => { unsafe { for &(i, v) in index {
-                    let p = sim_counts_ptr.offset(i as isize);
+                    let p = sim_counts.get_unchecked_mut(i as usize);
                     (*p).0 += value * v;
                     (*p).1 += 1;
                 } } },
@@ -110,47 +111,54 @@ impl<'a> DatasetIndex<'a> {
             }
         }
         let mut index_sims: Vec<(u32, f32)> = Vec::with_capacity(S);
-        for (i, &(sim, count)) in sim_counts.iter().enumerate() {
-            if sim > 0.0 {
-                let jaccard = (count as f32)/((self.nfeatures_list[i] + (xi.len() as u32) - count) as f32);
-                let mut sim = sim;
-                if beta == 0.0 {
-                } else if beta == 1.0 {
-                    sim *= jaccard;
-                } else {
-                    sim *= jaccard.powf(beta);
-                }
-                if index_sims.len() == 0 {
-                    index_sims.push((i as u32, sim));
-                } else if index_sims.last().unwrap().1 > sim {
-                    if index_sims.len() < S {
-                        index_sims.push((i as u32, sim));
+        for (i, &mut (ref mut psim, ref mut pcount)) in sim_counts.iter_mut().enumerate() {
+            if *pcount > 0 {
+                if *psim > 0.0 {
+                    let jaccard = (*pcount as f32)/((self.nfeatures_list[i] + (xi.len() as u32) - *pcount) as f32);
+                    let mut sim = *psim;
+                    if beta == 0.0 {
+                    } else if beta == 1.0 {
+                        sim *= jaccard;
+                    } else {
+                        sim *= jaccard.powf(beta);
                     }
-                } else {
-                    for k in 0..(index_sims.len()) {
-                        if sim >= index_sims[k].1 {
-                            if index_sims.len() < S {
-                                index_sims.push((0, 0.0_f32));
+                    if index_sims.len() == 0 {
+                        index_sims.push((i as u32, sim));
+                    } else if index_sims.last().unwrap().1 > sim {
+                        if index_sims.len() < S {
+                            index_sims.push((i as u32, sim));
+                        }
+                    } else {
+                        for k in 0..(index_sims.len()) {
+                            if sim >= index_sims[k].1 {
+                                if index_sims.len() < S {
+                                    index_sims.push((0, 0.0f32));
+                                }
+                                for l in (k..(index_sims.len()-1)).rev() {
+                                    index_sims[l+1] = index_sims[l];
+                                }
+                                index_sims[k] = (i as u32, sim);
+                                break;
                             }
-                            for l in (k..(index_sims.len()-1)).rev() {
-                                index_sims[l+1] = index_sims[l];
-                            }
-                            index_sims[k] = (i as u32, sim);
-                            break;
                         }
                     }
                 }
+                *psim = 0.0f32;
+                *pcount = 0;
             }
         }
         return index_sims;
+    }
+    fn new_context(&self) -> DatasetIndexContext {
+        return vec![(0.0f32, 0); self.labelvecs.len()];
     }
 }
 
 fn construct_dataset_index(ds: &Dataset) -> DatasetIndex {
     let mut indices: HashMap<u32, Vec<(u32, f32)>, FNVHasher> = HashMap::default();
-    let mut nfeatures_list = vec![0_u32; ds.X.len()];
+    let mut nfeatures_list = vec![0u32; ds.X.len()];
     for (i, (xi, _)) in ds.into_iter().enumerate() {
-        let mut xinorm = 0.0_f32;
+        let mut xinorm = 0.0f32;
         for &(_, value) in xi {
             xinorm += value*value;
         }
@@ -169,13 +177,17 @@ fn construct_dataset_index(ds: &Dataset) -> DatasetIndex {
 
 fn run_test(index: &DatasetIndex, ds: &Dataset, K: usize, S: usize, alpha: f32, beta: f32) -> LabelVectors {
     let mut yhat: LabelVectors = Vec::with_capacity(ds.size());
-    for (_, (xi, _)) in ds.into_iter().enumerate() {
+    let mut ctx = index.new_context();
+    for (i, (xi, _)) in ds.into_iter().enumerate() {
+        if i >= 1000 {
+            break;
+        }
         let mut xinorm = 0.0_f32;
         for &(_, value) in xi {
             xinorm += value*value;
         }
         xinorm = xinorm.sqrt();
-        let index_sims = index.find_nearests(xi, S, beta);
+        let index_sims = index.find_nearests(xi, S, beta, &mut ctx);
         let mut label_hist: HashMap<u32, f32, FNVHasher> = HashMap::default();
         for &(j, sim) in &index_sims {
             let sim = (sim/xinorm).powf(alpha);
@@ -243,7 +255,7 @@ fn report_precision(Yhat: &LabelVectors, Y: &LabelVectors, K: usize) -> (f32, f3
     for yi in Y {
         sumMaxPK += (yi.len().min(K) as f32)/(K as f32);
     }
-    let avgMaxPK = sumMaxPK/(Yhat.len() as f32);
+    let avgMaxPK = sumMaxPK/(Y.len() as f32);
     return (avgPK, avgMaxPK);
 }
 
@@ -293,8 +305,8 @@ fn run(optvals: Matches) {
     let start_time = Instant::now();
     let yhat = run_test(&train_index, &test_ds, maxK, S, alpha, beta);
     let t = start_time.elapsed();
-    let t_per_entry = t.checked_div(test_ds.size() as u32).unwrap();
-    info!("finished inference of {} entries in {}.{:03}s ({:.03}ms/entry)", test_ds.size(), t.as_secs(), t.subsec_nanos()/1_000_000, (t_per_entry.subsec_nanos() as f32)/1_000_000.0_f32);
+    let t_per_entry = t.checked_div(yhat.len() as u32).unwrap();
+    info!("finished inference of {} entries in {}.{:03}s ({:.03}ms/entry)", yhat.len(), t.as_secs(), t.subsec_nanos()/1_000_000, (t_per_entry.subsec_nanos() as f32)/1_000_000.0_f32);
     for &K in &Ks {
         let (avgPK, avgMaxPK) = report_precision(&yhat, &test_ds.Y, K);
         println!("Precision@{}={:5.2}/{:5.2}%", K, avgPK*100.0, avgMaxPK*100.0);
