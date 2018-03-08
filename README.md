@@ -16,9 +16,9 @@ However, in Rust ecosystems, there are some cons against golang (the followings 
 
 - Hard to compile the binaries for all platforms on a single environment (rustc needs the system linkers and libraries)
 - Lack of built-in profilers
-- Slow compilation (however, the optimized codes are amazing!!)
+- Slow compilation (negligible, the optimized codes are amazing!!)
 
-Contrary to first expectation, writing sticker in Rust is easier and succinct than doing in golang thanks to powerful syntax and type checks.
+Contrary to our first expectation, writing sticker in Rust is easier and succinct than doing in golang thanks to powerful syntax and type checks.
 
 # Results
 We evaluate the performances against [sticker](https://github.com/hiro4bbh/sticker) in the same settings of there.

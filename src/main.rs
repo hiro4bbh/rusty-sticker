@@ -3,22 +3,21 @@
 use std::collections::{HashMap,HashSet};
 use std::env;
 use std::fs::File;
-use std::hash::BuildHasherDefault;
+use std::hash;
 use std::io::{BufRead,BufReader};
 use std::path::Path;
-use std::process::exit;
+use std::process;
 use std::time::Instant;
 
 extern crate getopts;
 use getopts::{Matches,Options};
 
-extern crate fnv;
-use fnv::FnvHasher;
+extern crate time;
 
 #[macro_use] mod utils;
 use utils::logger;
 
-type FNVHasher = BuildHasherDefault<FnvHasher>;
+type Hasher = hash::BuildHasherDefault<utils::hash::Hasher>;
 
 type FeatureVector = Vec<(u32, f32)>;
 type FeatureVectors = Vec<FeatureVector>;
@@ -96,7 +95,7 @@ fn read_dataset<P: AsRef<Path>>(filename: P) -> Dataset {
 
 struct DatasetIndex<'a> {
     nfeatures_list: Vec<u32>,
-    indices: HashMap<u32, Vec<(u32, f32)>, FNVHasher>,
+    indices: HashMap<u32, Vec<(u32, f32)>, Hasher>,
     labelvecs: &'a LabelVectors,
 }
 
@@ -104,7 +103,7 @@ type DatasetIndexContext = Vec<(f32, u32)>;
 
 impl<'a> DatasetIndex<'a> {
     fn new(ds: &Dataset) -> DatasetIndex {
-        let mut indices: HashMap<u32, Vec<(u32, f32)>, FNVHasher> = HashMap::default();
+        let mut indices: HashMap<u32, Vec<(u32, f32)>, Hasher> = HashMap::default();
         let mut nfeatures_list = vec![0u32; ds.X.len()];
         for (i, (xi, _)) in ds.into_iter().enumerate() {
             let mut xinorm = 0.0f32;
@@ -191,7 +190,7 @@ fn run_test(index: &DatasetIndex, ds: &Dataset, K: usize, S: usize, alpha: f32, 
         }
         xinorm = xinorm.sqrt();
         let index_sims = index.find_nearests(xi, S, beta, &mut ctx);
-        let mut label_hist: HashMap<u32, f32, FNVHasher> = HashMap::default();
+        let mut label_hist: HashMap<u32, f32, Hasher> = HashMap::default();
         for &(j, sim) in &index_sims {
             let sim = (sim/xinorm).powf(alpha);
             for &label in &index.labelvecs[j as usize] {
@@ -240,7 +239,7 @@ fn report_precision(Yhat: &LabelVectors, Y: &LabelVectors, K: usize) -> (f32, f3
     let mut sumPK = 0.0f32;
     for (i, yihat) in Yhat.iter().enumerate() {
         let yi = &Y[i];
-        let mut yimap: HashSet<u32, FNVHasher> = HashSet::default();
+        let mut yimap: HashSet<u32, Hasher> = HashSet::default();
         for label in yi {
             yimap.insert(*label);
         }
@@ -349,7 +348,7 @@ fn main() {
     };
     if optvals.opt_present("h") {
         show_help(progname, opts);
-        exit(1);
+        process::exit(1);
     }
     run(optvals);
 }
