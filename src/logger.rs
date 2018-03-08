@@ -36,6 +36,7 @@ pub fn log(level: Level, msg: &str) {
     }
 }
 
+#[macro_export]
 macro_rules! log {
     ($lv:expr, $($e:tt)+) => ($crate::logger::log($lv, &format!($($e)*)));
 }

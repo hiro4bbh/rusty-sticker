@@ -3,6 +3,10 @@ name = "rusty-sticker"
 version = "0.0.0"
 authors = [ "Tatsuhiro Aoshima <hiro4bbh@gmail.com>" ]
 
+[[bin]]
+name = "rusty-sticker"
+path = "src/bin/main.rs"
+
 [profile.release]
 opt-level = 3
 debug = true

@@ -14,10 +14,9 @@ use getopts::{Matches,Options};
 
 extern crate time;
 
-#[macro_use] mod utils;
-use utils::logger;
+#[macro_use] extern crate rusty_sticker;
 
-type Hasher = hash::BuildHasherDefault<utils::hash::Hasher>;
+type Hasher = hash::BuildHasherDefault<rusty_sticker::hash::Hasher>;
 
 type FeatureVector = Vec<(u32, f32)>;
 type FeatureVectors = Vec<FeatureVector>;
