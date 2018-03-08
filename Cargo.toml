@@ -15,5 +15,4 @@ panic = 'unwind'
 [dependencies]
 fnv = "*"
 getopts = "*"
-log = "*"
 time = "*"

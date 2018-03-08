@@ -15,11 +15,8 @@ use getopts::{Matches,Options};
 extern crate fnv;
 use fnv::FnvHasher;
 
-#[macro_use] extern crate log;
-
-mod utils {
-    pub mod logger;
-}
+#[macro_use] mod utils;
+use utils::logger;
 
 type FNVHasher = BuildHasherDefault<FnvHasher>;
 
@@ -336,7 +333,6 @@ fn show_help(progname: &str, opts: Options) {
 }
 
 fn main() {
-    utils::logger::init_logger();
     let args: Vec<String> = env::args().collect();
     let progname = &args[0];
     let mut opts = Options::new();
