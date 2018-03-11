@@ -7,6 +7,10 @@ authors = [ "Tatsuhiro Aoshima <hiro4bbh@gmail.com>" ]
 name = "rusty-sticker"
 path = "src/bin/main.rs"
 
+[[bin]]
+name = "rusty-sticker-benchmarks"
+path = "src/bin/main_benchmarks.rs"
+
 [profile.release]
 opt-level = 3
 debug = true
@@ -18,4 +22,5 @@ panic = 'unwind'
 
 [dependencies]
 getopts = "*"
+rand = "*"
 time = "*"
