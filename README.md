@@ -45,13 +45,13 @@ Currently, the performance difference by the optimization efforts in Rust is not
 ## Other Miscellaneous Results
 ### Hash insertion
 We compare the hash insertion performance against `sticker`'s `KeyCountMap32`.
-The results is the following running on MacBook Early 2016:
+The result is the following running on MacBook Early 2016:
 
 ```
 ~/go/src/github.com/hiro4bbh/sticker$ go test -v . -bench .
 BenchmarkKeyCountMap32-4                                  	     500	   3666904 ns/op
 ~/src/rusty-sticker$ ./target/release/rusty-sticker-benchmarks
-insert 50% random u32 into 65536 buckets 10000 times: finished in 18.424s (1.842ms/entry)
+insert 50% random u32 into 65536 buckets 10000 times: finished in 18.424s (1.842ms/try)
 ```
 
 The code written in Rust is about 2x faster.

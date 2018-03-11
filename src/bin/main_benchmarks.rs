@@ -60,5 +60,5 @@ fn main() {
     }
     let elapsed = start.elapsed();
     let elapsed_per_entry = elapsed.checked_div(t as u32).unwrap();
-    println!("insert {}% random u32 into {} buckets {} times: finished in {}.{}s ({}.{}ms/entry)", p, n, t, elapsed.as_secs(), elapsed.subsec_nanos()/1_000_000, elapsed_per_entry.subsec_nanos()/1_000_000, elapsed_per_entry.subsec_nanos()/1_000%1_000)
+    println!("insert {}% random u32 into {} buckets {} times: finished in {}.{}s ({}.{}ms/try)", p, n, t, elapsed.as_secs(), elapsed.subsec_nanos()/1_000_000, elapsed_per_entry.subsec_nanos()/1_000_000, elapsed_per_entry.subsec_nanos()/1_000%1_000)
 }
