@@ -325,7 +325,7 @@ fn run(optvals: Matches) {
 }
 
 fn show_help(progname: &str, opts: Options) {
-    println!("rusty-sticker");
+    println!("rusty-sticker-nearest");
     println!("Copyright 2018- Tatsuhiro Aoshima (hiro4bbh@gmail.com).");
     print!("{}", opts.usage(&format!("Usage: {} [options] dataset-root", progname)));
 }

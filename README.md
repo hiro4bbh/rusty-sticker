@@ -43,15 +43,30 @@ Thus, we can improve the implementation as follows:
 Currently, the performance difference by the optimization efforts in Rust is not so small.
 
 ## Other Miscellaneous Results
-### Hash insertion
+The following comparisons are for `sticker`'s `LabelNear`.
+
+### Sorting the K-Largest Entries with a Heap
+We compare the sorting of the K-largest entries with a heap against `sticker`'s `SortLargestCountsWithHeap`.
+The result is the following running on MacBook Early 2016:
+
+```
+~/go/src/github.com/hiro4bbh/sticker$ go test -v . -bench .
+BenchmarkKeyCounts32SortLargestCountsWithHeap-4           	     200	   5851999 ns/op
+~/src/rusty-sticker$ ./target/release/rusty-sticker-benchmarks
+(sort 150 largests with heap in 65536 buckets with 50% filled) * 10000 times: finished in 31.747s (3.174ms/try)
+```
+
+The code written in Rust is about 1.8x faster.
+
+### Hash Insertion
 We compare the hash insertion performance against `sticker`'s `KeyCountMap32`.
 The result is the following running on MacBook Early 2016:
 
 ```
 ~/go/src/github.com/hiro4bbh/sticker$ go test -v . -bench .
-BenchmarkKeyCountMap32-4                                  	     500	   3666904 ns/op
+BenchmarkKeyCountMap32-4                                  	     500	   2616577 ns/op
 ~/src/rusty-sticker$ ./target/release/rusty-sticker-benchmarks
-insert 50% random u32 into 65536 buckets 10000 times: finished in 18.424s (1.842ms/try)
+(fill 50% of 65536 buckets) * 10000 times: finished in 17.778s (1.777ms/try)
 ```
 
-The code written in Rust is about 2x faster.
+The code written in Rust is about 1.5x faster.

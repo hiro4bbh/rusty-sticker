@@ -4,8 +4,8 @@ version = "0.0.0"
 authors = [ "Tatsuhiro Aoshima <hiro4bbh@gmail.com>" ]
 
 [[bin]]
-name = "rusty-sticker"
-path = "src/bin/main.rs"
+name = "rusty-sticker-nearest"
+path = "src/bin/main_nearest.rs"
 
 [[bin]]
 name = "rusty-sticker-benchmarks"
