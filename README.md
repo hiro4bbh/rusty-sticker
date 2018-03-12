@@ -4,7 +4,7 @@ Copyright 2018- Tatsuhiro Aoshima (hiro4bbh@gmail.com).
 
 # Introduction
 rusty-sticker is a minimal [sticker](https://github.com/hiro4bbh/sticker) written in Rust.
-Currently, this supports only `LabelNearest`, and there is no unit test (we verify only the result of the real datasets).
+Currently, this supports only `LabelNearest`.
 We are not experts of Rust (you can follow up the commits for our evolution), so, if you have any idea for smart coding, please tell us your advice!
 
 The reason why we develop rusty-sticker is:
@@ -19,6 +19,7 @@ However, in Rust ecosystems, there are some cons against golang (the followings 
 - Slow compilation (negligible, the optimized codes are amazing!!)
 
 Contrary to our first expectation, writing sticker in Rust is easier and succinct than doing in golang thanks to powerful syntax and type checks.
+We will prepare rustdoc, and consider unit tests in rustdoc (currently, we verify only the results on the real datasets as reported in the following sections).
 
 # Results
 We evaluate the performances against [sticker](https://github.com/hiro4bbh/sticker) in the same settings of there.

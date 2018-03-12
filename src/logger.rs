@@ -3,7 +3,7 @@ use std::str::FromStr;
 
 extern crate time;
 
-#[derive(Debug,PartialEq,PartialOrd)]
+#[derive(Debug,Eq,Ord,PartialEq,PartialOrd)]
 pub enum Level {
     DEBUG,
     INFO,
