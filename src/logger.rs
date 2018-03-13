@@ -30,7 +30,7 @@ impl FromStr for Level {
 pub struct ParseLevelError(String);
 
 pub fn log(level: Level, msg: &str) {
-    let min_level = env::var("LOGLEVEL").unwrap_or("WARN".to_string()).parse::<Level>().expect("illegal LOGLEVEL");
+    let min_level = env::var("RUST_LOG").unwrap_or("WARN".to_string()).parse::<Level>().expect("illegal LOGLEVEL");
     if level >= min_level {
         println!("{:>5} {} {}", format!("{:?}", level), time::now().rfc3339(), msg);
     }

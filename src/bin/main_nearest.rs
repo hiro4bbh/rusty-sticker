@@ -126,11 +126,15 @@ impl<'a> DatasetIndex<'a> {
         let sim_counts = ctx;
         for &(key, value) in xi {
             match self.indices.get(&key) {
-                Some(index) => { unsafe { for &(i, v) in index {
-                    let p = sim_counts.get_unchecked_mut(i as usize);
-                    (*p).0 += value * v;
-                    (*p).1 += 1;
-                } } },
+                Some(index) => {
+                    unsafe {
+                        for &(i, v) in index {
+                            let p = sim_counts.get_unchecked_mut(i as usize);
+                            (*p).0 += value * v;
+                            (*p).1 += 1;
+                        }
+                    }
+                },
                 None => {}
             }
         }
@@ -139,13 +143,13 @@ impl<'a> DatasetIndex<'a> {
             if *pcount > 0 {
                 if *psim > 0.0 {
                     let jaccard = (*pcount as f32)/((self.nfeatures_list[i] + (xi.len() as u32) - *pcount) as f32);
-                    let mut sim = *psim;
-                    if beta == 0.0 {
+                    let sim = if beta == 0.0 {
+                        *psim
                     } else if beta == 1.0 {
-                        sim *= jaccard;
+                        jaccard*(*psim)
                     } else {
-                        sim *= jaccard.powf(beta);
-                    }
+                        jaccard.powf(beta)*(*psim)
+                    };
                     if index_sims.len() == 0 {
                         index_sims.push((i as u32, sim));
                     } else if index_sims.last().unwrap().1 > sim {
