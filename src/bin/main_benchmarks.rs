@@ -9,7 +9,12 @@ extern crate rand;
 use rand::Rng;
 
 fn hash_u32(x: u32) -> u32 {
-    x*2654435761
+    let mut h = (x + 1) as u64;
+    h ^= h>>16;
+    h = (h*0x85ebca6b)&0xffffffff;
+    h ^= h>>13;
+    h = (h*0xc2b2ae35)&0xffffffff;
+    (h^(h>>16)) as u32
 }
 
 fn sort_largests_with_heap(kcs: &mut [(u32, u32)], K: usize) {

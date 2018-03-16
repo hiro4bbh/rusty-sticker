@@ -52,9 +52,9 @@ The result is the following running on MacBook Early 2016:
 
 ```
 ~/go/src/github.com/hiro4bbh/sticker$ go test -v . -bench .
-BenchmarkKeyCounts32SortLargestCountsWithHeap-4           	     200	   5851999 ns/op
+BenchmarkKeyCounts32SortLargestCountsWithHeap-4           	     200	   6006735 ns/op
 ~/src/rusty-sticker$ ./target/release/rusty-sticker-benchmarks
-(sort 150 largests with heap in 65536 buckets with 50% filled) * 10000 times: finished in 31.747s (3.174ms/try)
+(sort 150 largests with heap in 65536 buckets with 50% filled) * 10000 times: finished in 32.320s (3.232ms/try)
 ```
 
 The code written in Rust is about 1.8x faster.
@@ -65,9 +65,9 @@ The result is the following running on MacBook Early 2016:
 
 ```
 ~/go/src/github.com/hiro4bbh/sticker$ go test -v . -bench .
-BenchmarkKeyCountMap32-4                                  	     500	   2616577 ns/op
+BenchmarkKeyCountMap32-4                                  	     500	   2868757 ns/op
 ~/src/rusty-sticker$ ./target/release/rusty-sticker-benchmarks
-(fill 50% of 65536 buckets) * 10000 times: finished in 17.778s (1.777ms/try)
+(fill 50% of 65536 buckets) * 10000 times: finished in 19.246s (1.924ms/try)
 ```
 
 The code written in Rust is about 1.5x faster.
