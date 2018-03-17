@@ -21,7 +21,7 @@ Contrary to our first expectation, writing sticker in Rust is easier and succinc
 As ToDo, we will prepare rustdoc, and consider unit tests in rustdoc (currently, we verify only the results on the real datasets as reported in the following sections).
 
 ## Compilation and Cross-Compilation
-First, install the latest Rust from [rust-lang.org](https://rust-lang.org/).
+First, install the latest Rust from [https://www.rust-lang.org](https://www.rust-lang.org).
 Here, we show the steps for compilation on macOS and cross-compilation for Windows (GNU ABI) on macOS.
 
 It is easy to compile on macOS:
