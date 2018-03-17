@@ -9,17 +9,56 @@ We are not experts of Rust (you can follow up the commits for our evolution), so
 
 The reason why we develop rusty-sticker is:
 
-- Programs written in golang seems to be slower, due to GC or lack of some sophisticated optimizations (maybe. especially, we hate the unoptimized unnecessary panic index checks or the un-inlined function calls).
-- Programs written in Rust seems to be faster, thanks to the smart memory management and the sophisticated optimizations provided by LLVM.
+- Programs written in golang seems to be slower and needs larger memory footprint; due to GC or lack of some sophisticated optimizations (maybe. especially, we hate the unoptimized unnecessary panic index checks or the un-inlined function calls).
+- Programs written in Rust seems to be faster and needs smaller memory footprint; thanks to the smart memory management and the sophisticated optimizations provided by LLVM.
 
-However, in Rust ecosystems, there are some cons against golang (the followings can be done easily in a single environment):
+However, in Rust ecosystems, there are some cons against golang:
 
-- Hard to compile the binaries for all platforms on a single environment (rustc needs the system linkers and libraries)
 - Lack of built-in profilers
-- Slow compilation (negligible, the optimized codes are amazing!!)
+- Lack of test coverage reporters
 
-Contrary to our first expectation, writing sticker in Rust is easier and succinct than doing in golang thanks to powerful syntax and type checks.
-We will prepare rustdoc, and consider unit tests in rustdoc (currently, we verify only the results on the real datasets as reported in the following sections).
+Contrary to our first expectation, writing sticker in Rust is easier and succinct than doing in golang thanks to powerful syntax and type/lifetime checkers.
+As ToDo, we will prepare rustdoc, and consider unit tests in rustdoc (currently, we verify only the results on the real datasets as reported in the following sections).
+
+## Compilation and Cross-Compilation
+First, install the latest Rust from [rust-lang.org](https://rust-lang.org/).
+Here, we show the steps for compilation on macOS and cross-compilation for Windows (GNU ABI) on macOS.
+
+It is easy to compile on macOS:
+
+```bash
+cargo build --release
+```
+
+Release mode should be used for code optimization, and it can also be used for profiling with debug information.
+The compiled target will be located in `./target/release`.
+
+In order to cross-compile for Windows (GNU ABI) on macOS, install the dependencies:
+
+```bash
+# Install the MinGW-w64 compiler.
+brew install mingw-w64
+# Install the Rust toolchain for x86_64-pc-windows-gnu (stable).
+rustup toolchain install stable-x86_64-pc-windows-gnu
+# Install the libraries for x86_64-pc-windows-gnu.
+rustup target add x86_64-pc-windows-gnu
+```
+
+Set the cargo config for using the MinGW-w64 compiler in cross-compiling as follows:
+
+```toml
+[target.x86_64-pc-windows-gnu]
+linker = "/usr/local/bin/x86_64-w64-mingw32-gcc"
+ar = "/usr/local/bin/x86_64-w64-mingw32-gcc-ar"
+```
+
+Then, you can cross-compile as follows:
+
+```bash
+cargo build --target=x86_64-pc-windows-gnu --release
+```
+
+The compiled target will be located in `./target/x86_64-pc-windows-gnu/release`.
 
 # Results
 We evaluate the performances against [sticker](https://github.com/hiro4bbh/sticker) in the same settings of there.
